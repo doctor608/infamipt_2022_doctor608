@@ -19,55 +19,67 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 global x, y, r, color, speedx, speedy, lifetime, countertime
 
-x = [0]*2
-y = [0]*2
-r = [0]*2
-color = [0]*2
-speedx = [0]*2
-speedy = [0]*2
-lifetime = [0]*2
-countertime = [0]*2
-
-def new_ball(i):
+def new_ball():
+    '''
+    Создаёт на экране новый шарик.
+    x, y - координаты центра шарика; r - радиус; color - цвет, заданный в формате, подходящем для pygame.Color
+    speedx, speedy - скорости  по осям x и y
+    lifetime - полное время жизни; countertime - счетчик времени
+    '''
     global x, y, r, color, speedx, speedy, lifetime, countertime
-    x[i] = randint(100, 700)
-    y[i] = randint(100, 500)
-    r[i] = randint(30, 50)
-    color[i] = COLORS[randint(0, 5)]
-    speedx[i] = randint(-8, 8)
-    speedy[i] = randint(-8, 8)
-    lifetime[i] = randint(25, 100)
-    countertime[i] = 0
-    circle(screen, color[i], (x[i], y[i]), r[i])
+    x = randint(100, 700)
+    y = randint(100, 500)
+    r = randint(30, 50)
+    color = COLORS[randint(0, 5)]
+    speedx = randint(-8, 8)
+    speedy = randint(-8, 8)
+    lifetime = randint(25, 100)
+    countertime = 0
+    circle(screen, color, (x, y), r)
 
-def update_position(i):
+def update_position():
+    '''
+    Обновляет местоположение шарика на экране(выглядит как движение шарика), отражает шарик от стен, увеличивает counter
+    time и в случае совпадения countertime с lifetime создает новый шарик вместо старого.
+    x, y - координаты центра шарика; r - радиус; color - цвет, заданный в формате, подходящем для pygame.Color
+    speedx, speedy - скорости  по осям x и y
+    lifetime - полное время жизни; countertime - счетчик времени
+    '''
     global x, y, r, speedx, speedy, countertime
-    x[i] += speedx
-    y[i] += speedy
-    countertime[i] += 1
-    if (countertime[i] == lifetime[i]):
-        new_ball(i)
+    x += speedx
+    y += speedy
+    countertime += 1
+    if (countertime == lifetime):
+        new_ball()
     if (x + r > 1200):
-        speedx[i] = randint(-8, -1)
+        speedx = randint(-8, -1)
     elif (x - r < 0):
-        speedx[i] = randint(1, 8)
+        speedx = randint(1, 8)
     elif (y - r < 0):
-        speedy[i] = randint(1, 8)
+        speedy = randint(1, 8)
     elif (y + r > 900):
-        speedy[i] = randint(-8, -1)
-    circle(screen, color[i], (x[i],y[i]), r[i])
+        speedy = randint(-8, -1)
+    circle(screen, color, (x,y), r)
 
 def click(event):
-    if ((event.pos[0] - x[0])**2 + (event.pos[1] - y[0])**2) <= r[0]**2:
+    '''
+    Рассчитывает было ли попадание в шарик. В случае попадания возвращает True и вызывает add_score(), в случае
+    непопадания возвращает False.
+    event - объект pygame, позволяет получать информацию о событии(координаты клика мыши)
+    '''
+    if ((event.pos[0] - x)**2 + (event.pos[1] - y)**2) <= r**2:
+        #print("ПОПАЛ!")
         add_score(5)
-        return 0
-    elif ((event.pos[0] - x[1])**2 + (event.pos[1] - y[1])**2) <= r[1]**2:
-        add_score(5)
-        return 1
+        return True
     else:
+        #print("Не попал!")
         return False
 
 def add_score(points):
+    '''
+    Добавляет очки за попадание и выводит их в консоль.
+    points - очки начисляемые за шарик
+    '''
     global score
     score += points
     print(score)
@@ -76,8 +88,7 @@ pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
-new_ball(0)
-new_ball(1)
+new_ball()
 
 while not finished:
     clock.tick(FPS)
@@ -85,13 +96,10 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if (click(event) == 0):
-                new_ball(0)
-            elif (click(event) == 1):
-                new_ball(1)
+            if (click(event) == True):
+                new_ball()
     screen.fill(BLACK)
-    update_position(0)
-    update_position(1)
+    update_position()
     pygame.display.update()
 
 pygame.quit()
